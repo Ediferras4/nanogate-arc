@@ -11,6 +11,18 @@ if (!SELLER_ADDRESS) {
   throw new Error("Missing SELLER_ADDRESS in environment variables.");
 }
 
+/* Request logger: shows route status in Render logs */
+app.use((req, res, next) => {
+  const startedAt = Date.now();
+
+  res.on("finish", () => {
+    const ms = Date.now() - startedAt;
+    console.log(`${req.method} ${req.originalUrl} -> ${res.statusCode} (${ms}ms)`);
+  });
+
+  next();
+});
+
 const gateway = createGatewayMiddleware({
   sellerAddress: SELLER_ADDRESS,
 });
@@ -19,11 +31,21 @@ app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
     status: "online",
-    message: "Paid API access demo on Arc Testnet using x402 and Circle Gateway Nanopayments.",
+    message:
+      "Paid API access demo on Arc Testnet using x402 and Circle Gateway Nanopayments.",
     routes: {
+      health: "/health",
       free: "/free",
       premium: "/premium-data",
     },
+  });
+});
+
+app.get("/health", (_req, res) => {
+  res.json({
+    ok: true,
+    service: "nanogate-arc",
+    status: "healthy",
   });
 });
 
@@ -57,6 +79,7 @@ app.get(
 
 app.listen(PORT, () => {
   console.log(`NanoGate server running on http://localhost:${PORT}`);
+  console.log(`Health route: http://localhost:${PORT}/health`);
   console.log(`Free route: http://localhost:${PORT}/free`);
   console.log(`Paid route: http://localhost:${PORT}/premium-data`);
 });
