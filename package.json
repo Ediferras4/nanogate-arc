@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "tsx server.ts",
-    "dev": "tsx server.ts"
+    "dev": "tsx server.ts",
+    "buyer": "tsx buyer.ts"
   },
   "dependencies": {
     "@circle-fin/x402-batching": "latest",
