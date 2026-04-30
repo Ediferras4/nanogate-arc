@@ -11,12 +11,6 @@ if (!SELLER_ADDRESS) {
   throw new Error("Missing SELLER_ADDRESS in environment variables.");
 }
 
-/*
-  Simple request logger for Render logs.
-  Example:
-  GET /free -> 200
-  GET /premium-data -> 402
-*/
 app.use((req, res, next) => {
   const startedAt = Date.now();
 
@@ -28,17 +22,9 @@ app.use((req, res, next) => {
   next();
 });
 
-/*
-  Circle Gateway Nanopayments seller middleware.
-
-  Arc Testnet network:
-  eip155:5042002
-
-  The seller receives payments at SELLER_ADDRESS.
-*/
 const gateway = createGatewayMiddleware({
   sellerAddress: SELLER_ADDRESS,
-  networks: ["eip155:5042002"],
+  networks: ["arcTestnet"],
 });
 
 app.get("/", (_req, res) => {
@@ -87,7 +73,7 @@ app.get(
       ok: true,
       type: "paid",
       product: "NanoGate Premium Data",
-      network: "eip155:5042002",
+      network: "arcTestnet",
       price: "$0.001 USDC",
       message: "Payment accepted. Premium API response unlocked.",
       data: {
