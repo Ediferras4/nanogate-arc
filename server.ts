@@ -11,7 +11,13 @@ if (!SELLER_ADDRESS) {
   throw new Error("Missing SELLER_ADDRESS in environment variables.");
 }
 
-/* Request logger: shows route status in Render logs */
+/*
+  Request logger:
+  Mostra no Render:
+  GET /health -> 200
+  GET /free -> 200
+  GET /premium-data -> 402
+*/
 app.use((req, res, next) => {
   const startedAt = Date.now();
 
@@ -23,8 +29,16 @@ app.use((req, res, next) => {
   next();
 });
 
+/*
+  Arc Testnet:
+  eip155:5042002
+
+  Isso força o seller a oferecer opção de pagamento compatível
+  com o buyer que está usando chain: "arcTestnet".
+*/
 const gateway = createGatewayMiddleware({
   sellerAddress: SELLER_ADDRESS,
+  networks: ["eip155:5042002"],
 });
 
 app.get("/", (_req, res) => {
