@@ -24,7 +24,6 @@ app.use((req, res, next) => {
 
 const gateway = createGatewayMiddleware({
   sellerAddress: SELLER_ADDRESS,
-  networks: ["arcTestnet"],
 });
 
 app.get("/", (_req, res) => {
@@ -73,7 +72,6 @@ app.get(
       ok: true,
       type: "paid",
       product: "NanoGate Premium Data",
-      network: "arcTestnet",
       price: "$0.001 USDC",
       message: "Payment accepted. Premium API response unlocked.",
       data: {
