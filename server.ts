@@ -1,6 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import { createGatewayMiddleware } from "@circle-fin/x402-batching/server";
+import { BatchFacilitatorClient } from "@circle-fin/x402-batching/server";
 
 const app = express();
 
@@ -9,6 +9,33 @@ const SELLER_ADDRESS = process.env.SELLER_ADDRESS;
 
 if (!SELLER_ADDRESS) {
   throw new Error("Missing SELLER_ADDRESS in environment variables.");
+}
+
+const facilitator = new BatchFacilitatorClient();
+
+const ARC_TESTNET_NETWORK = "eip155:5042002";
+const ARC_TESTNET_USDC = "0x3600000000000000000000000000000000000000";
+const ARC_GATEWAY_WALLET = "0x0077777dEBA4688BDeF3E311b846F25870A19B9";
+
+// $0.001 USDC = 1000 base units because USDC has 6 decimals.
+const PREMIUM_AMOUNT = "1000";
+
+const premiumPaymentRequirement = {
+  scheme: "exact",
+  network: ARC_TESTNET_NETWORK,
+  asset: ARC_TESTNET_USDC,
+  amount: PREMIUM_AMOUNT,
+  maxTimeoutSeconds: 345600,
+  payTo: SELLER_ADDRESS,
+  extra: {
+    name: "GatewayWalletBatched",
+    version: "1",
+    verifyingContract: ARC_GATEWAY_WALLET,
+  },
+};
+
+function encodePaymentRequired(payload: unknown) {
+  return Buffer.from(JSON.stringify(payload)).toString("base64url");
 }
 
 app.use((req, res, next) => {
@@ -20,10 +47,6 @@ app.use((req, res, next) => {
   });
 
   next();
-});
-
-const gateway = createGatewayMiddleware({
-  sellerAddress: SELLER_ADDRESS,
 });
 
 app.get("/", (_req, res) => {
@@ -56,22 +79,49 @@ app.get("/free", (_req, res) => {
   });
 });
 
-app.get(
-  "/premium-data",
-  gateway.require("$0.001"),
-  (req, res) => {
-    const payment = (req as any).payment;
+app.get("/premium-data", async (req, res) => {
+  const signature =
+    req.headers["payment-signature"] ||
+    req.headers["PAYMENT-SIGNATURE".toLowerCase()];
 
-    if (payment) {
-      console.log(
-        `Paid ${payment.amount} USDC by ${payment.payer} on ${payment.network}`
-      );
+  const paymentRequiredPayload = {
+    x402Version: 2,
+    accepts: [premiumPaymentRequirement],
+  };
+
+  if (!signature || typeof signature !== "string") {
+    res.setHeader("payment-required", encodePaymentRequired(paymentRequiredPayload));
+
+    return res.status(402).json(paymentRequiredPayload);
+  }
+
+  try {
+    const paymentPayload = JSON.parse(
+      Buffer.from(signature, "base64").toString("utf8")
+    );
+
+    const settlement = await facilitator.settle(
+      paymentPayload,
+      premiumPaymentRequirement
+    );
+
+    if (!settlement.success) {
+      console.log("Settlement failed:", settlement);
+
+      res.setHeader("payment-required", encodePaymentRequired(paymentRequiredPayload));
+
+      return res.status(402).json({
+        error: "Settlement failed",
+        settlement,
+      });
     }
 
-    res.json({
+    return res.json({
       ok: true,
       type: "paid",
       product: "NanoGate Premium Data",
+      network: "arcTestnet",
+      chain: ARC_TESTNET_NETWORK,
       price: "$0.001 USDC",
       message: "Payment accepted. Premium API response unlocked.",
       data: {
@@ -81,8 +131,16 @@ app.get(
         proof: "NanoGate unlocked this response through x402.",
       },
     });
+  } catch (error) {
+    console.error("Payment handling error:", error);
+
+    res.setHeader("payment-required", encodePaymentRequired(paymentRequiredPayload));
+
+    return res.status(402).json({
+      error: "Invalid payment signature or settlement error",
+    });
   }
-);
+});
 
 app.listen(PORT, () => {
   console.log(`NanoGate server running on http://localhost:${PORT}`);
