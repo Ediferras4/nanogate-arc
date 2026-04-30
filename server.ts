@@ -59,19 +59,28 @@ app.get("/free", (_req, res) => {
 
 app.get(
   "/premium-data",
-  gateway.require("0.001"),
-  (_req, res) => {
+  gateway.require("$0.001"),
+  (req, res) => {
+    const payment = (req as any).payment;
+
+    if (payment) {
+      console.log(
+        `Paid ${payment.amount} USDC by ${payment.payer} on ${payment.network}`
+      );
+    }
+
     res.json({
       ok: true,
       type: "paid",
       product: "NanoGate Premium Data",
       network: "arcTestnet",
-      price: "0.001 USDC",
+      price: "$0.001 USDC",
       message: "Payment accepted. Premium API response unlocked.",
       data: {
         signal: "Arc Nanopayments demo",
         useCase: "paid API access",
         model: "pay-per-call",
+        proof: "NanoGate unlocked this response through x402.",
       },
     });
   }
