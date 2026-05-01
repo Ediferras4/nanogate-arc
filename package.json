@@ -1,25 +1,26 @@
 {
   "name": "nanogate-arc",
   "version": "0.1.0",
-  "description": "Paid API access demo on Arc Testnet using x402 and Circle Gateway Nanopayments.",
+  "private": true,
   "type": "module",
   "scripts": {
     "start": "tsx server.ts",
-    "dev": "tsx server.ts",
-    "buyer": "tsx buyer.ts"
+    "buyer": "tsx buyer.ts",
+    "check": "tsc --noEmit"
   },
   "dependencies": {
     "@circle-fin/x402-batching": "latest",
     "@x402/core": "latest",
     "@x402/evm": "latest",
+    "@x402/express": "latest",
     "dotenv": "latest",
     "express": "latest",
-    "tsx": "latest",
-    "typescript": "latest",
     "viem": "latest"
   },
   "devDependencies": {
     "@types/express": "latest",
-    "@types/node": "latest"
+    "@types/node": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
   }
 }
