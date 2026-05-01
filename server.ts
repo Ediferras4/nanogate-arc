@@ -1,10 +1,15 @@
 import "dotenv/config";
 import express from "express";
+import { createGatewayMiddleware } from "@circle-fin/x402-batching/server";
 
 const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
-const SELLER_ADDRESS = process.env.SELLER_ADDRESS || "not-configured";
+const SELLER_ADDRESS = process.env.SELLER_ADDRESS;
+
+if (!SELLER_ADDRESS) {
+  throw new Error("Missing SELLER_ADDRESS in environment variables.");
+}
 
 app.use((req, res, next) => {
   const startedAt = Date.now();
@@ -17,17 +22,22 @@ app.use((req, res, next) => {
   next();
 });
 
+const gateway = createGatewayMiddleware({
+  sellerAddress: SELLER_ADDRESS,
+  networks: ["eip155:5042002"],
+});
+
 app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
     status: "online",
-    mode: "clean-rebuild",
-    sellerConfigured: SELLER_ADDRESS !== "not-configured",
+    mode: "official-seller-middleware",
+    sellerConfigured: true,
     routes: {
       health: "/health",
       free: "/free",
-      premium: "/premium-data"
-    }
+      premium: "/premium-data",
+    },
   });
 });
 
@@ -35,7 +45,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     service: "nanogate-arc",
-    status: "healthy"
+    status: "healthy",
   });
 });
 
@@ -43,15 +53,25 @@ app.get("/free", (_req, res) => {
   res.json({
     ok: true,
     type: "free",
-    message: "NanoGate free route is online."
+    message: "NanoGate free route is online.",
   });
 });
 
-app.get("/premium-data", (_req, res) => {
-  res.status(501).json({
-    ok: false,
-    type: "premium",
-    message: "Premium x402 route will be rebuilt cleanly from the official seller flow."
+app.get("/premium-data", gateway.require("$0.001"), (req, res) => {
+  const payment = (req as any).payment;
+
+  res.json({
+    ok: true,
+    type: "paid",
+    product: "NanoGate Premium Data",
+    price: "$0.001 USDC",
+    paid: true,
+    payment: payment || null,
+    data: {
+      signal: "Arc Testnet x402 payment accepted.",
+      useCase: "paid API access",
+      model: "pay-per-request",
+    },
   });
 });
 
@@ -59,5 +79,5 @@ app.listen(PORT, () => {
   console.log(`NanoGate server running on http://localhost:${PORT}`);
   console.log(`Health route: http://localhost:${PORT}/health`);
   console.log(`Free route: http://localhost:${PORT}/free`);
-  console.log(`Premium route: http://localhost:${PORT}/premium-data`);
+  console.log(`Paid route: http://localhost:${PORT}/premium-data`);
 });
