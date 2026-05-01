@@ -1,10 +1,6 @@
 import "dotenv/config";
 import express from "express";
-import { paymentMiddleware, x402ResourceServer } from "@x402/express";
-import {
-  BatchFacilitatorClient,
-  GatewayEvmScheme,
-} from "@circle-fin/x402-batching/server";
+import { createGatewayMiddleware } from "@circle-fin/x402-batching/server";
 
 const app = express();
 
@@ -26,39 +22,15 @@ app.use((req, res, next) => {
   next();
 });
 
-const resourceServer = new x402ResourceServer([
-  new BatchFacilitatorClient(),
-]);
-
-resourceServer.register("eip155:*", new GatewayEvmScheme());
-
-await resourceServer.initialize();
-
-app.use(
-  paymentMiddleware(
-    {
-      "GET /premium-data": {
-        accepts: [
-          {
-            scheme: "exact",
-            price: "$0.001",
-            network: "eip155:5042002",
-            payTo: SELLER_ADDRESS,
-          },
-        ],
-        description: "NanoGate premium API data on Arc Testnet",
-        mimeType: "application/json",
-      },
-    },
-    resourceServer
-  )
-);
+const gateway = createGatewayMiddleware({
+  sellerAddress: SELLER_ADDRESS,
+});
 
 app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
     status: "online",
-    mode: "advanced-x402-resource-server",
+    mode: "simple-circle-gateway-middleware-all-networks",
     sellerConfigured: true,
     routes: {
       health: "/health",
@@ -84,13 +56,16 @@ app.get("/free", (_req, res) => {
   });
 });
 
-app.get("/premium-data", (_req, res) => {
+app.get("/premium-data", gateway.require("$0.001"), (req, res) => {
+  const payment = (req as any).payment;
+
   res.json({
     ok: true,
     type: "paid",
     product: "NanoGate Premium Data",
     price: "$0.001 USDC",
     paid: true,
+    payment: payment || null,
     data: {
       signal: "Arc Testnet x402 payment accepted.",
       useCase: "paid API access",
