@@ -1,49 +1,10 @@
 import "dotenv/config";
 import express from "express";
-import { BatchFacilitatorClient } from "@circle-fin/x402-batching/server";
-import { CHAIN_CONFIGS } from "@circle-fin/x402-batching/client";
 
 const app = express();
 
 const PORT = Number(process.env.PORT || 3000);
-const SELLER_ADDRESS = process.env.SELLER_ADDRESS;
-
-if (!SELLER_ADDRESS) {
-  throw new Error("Missing SELLER_ADDRESS in environment variables.");
-}
-
-const facilitator = new BatchFacilitatorClient();
-
-const ARC_CONFIG = CHAIN_CONFIGS["arcTestnet"] as any;
-
-const ARC_TESTNET_NETWORK = "eip155:5042002";
-const ARC_TESTNET_USDC = String(
-  ARC_CONFIG.usdcAddress || ARC_CONFIG.usdc
-).toLowerCase();
-
-const ARC_GATEWAY_WALLET = String(
-  ARC_CONFIG.gatewayWalletAddress || ARC_CONFIG.gatewayWallet
-).toLowerCase();
-
-const PREMIUM_AMOUNT = "1000"; // $0.001 USDC, 6 decimals
-
-const premiumPaymentRequirement = {
-  scheme: "exact",
-  network: ARC_TESTNET_NETWORK,
-  asset: ARC_TESTNET_USDC,
-  amount: PREMIUM_AMOUNT,
-  maxTimeoutSeconds: 345600,
-  payTo: SELLER_ADDRESS,
-  extra: {
-    name: "GatewayWalletBatched",
-    version: "1",
-    verifyingContract: ARC_GATEWAY_WALLET,
-  },
-};
-
-function encodePaymentRequired(payload: unknown) {
-  return Buffer.from(JSON.stringify(payload)).toString("base64url");
-}
+const SELLER_ADDRESS = process.env.SELLER_ADDRESS || "not-configured";
 
 app.use((req, res, next) => {
   const startedAt = Date.now();
@@ -60,13 +21,13 @@ app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
     status: "online",
-    message:
-      "Paid API access demo on Arc Testnet using x402 and Circle Gateway Nanopayments.",
+    mode: "clean-rebuild",
+    sellerConfigured: SELLER_ADDRESS !== "not-configured",
     routes: {
       health: "/health",
       free: "/free",
-      premium: "/premium-data",
-    },
+      premium: "/premium-data"
+    }
   });
 });
 
@@ -74,7 +35,7 @@ app.get("/health", (_req, res) => {
   res.json({
     ok: true,
     service: "nanogate-arc",
-    status: "healthy",
+    status: "healthy"
   });
 });
 
@@ -82,75 +43,21 @@ app.get("/free", (_req, res) => {
   res.json({
     ok: true,
     type: "free",
-    message: "This route is free. NanoGate is alive.",
+    message: "NanoGate free route is online."
   });
 });
 
-app.get("/premium-data", async (req, res) => {
-  const signature = req.headers["payment-signature"];
-
-  const paymentRequiredPayload = {
-    x402Version: 2,
-    accepts: [premiumPaymentRequirement],
-  };
-
-  if (!signature || typeof signature !== "string") {
-    res.setHeader("payment-required", encodePaymentRequired(paymentRequiredPayload));
-    return res.status(402).json(paymentRequiredPayload);
-  }
-
-  try {
-    const paymentPayload = JSON.parse(
-      Buffer.from(signature, "base64").toString("utf8")
-    );
-
-    const settlement = await facilitator.settle(
-      paymentPayload,
-      premiumPaymentRequirement
-    );
-
-    if (!settlement.success) {
-      console.log("Settlement failed:", settlement);
-
-      res.setHeader("payment-required", encodePaymentRequired(paymentRequiredPayload));
-
-      return res.status(402).json({
-        error: "Settlement failed",
-        settlement,
-      });
-    }
-
-    return res.json({
-      ok: true,
-      type: "paid",
-      product: "NanoGate Premium Data",
-      network: "arcTestnet",
-      chain: ARC_TESTNET_NETWORK,
-      price: "$0.001 USDC",
-      message: "Payment accepted. Premium API response unlocked.",
-      data: {
-        signal: "Arc Nanopayments demo",
-        useCase: "paid API access",
-        model: "pay-per-call",
-        proof: "NanoGate unlocked this response through x402.",
-      },
-    });
-  } catch (error) {
-    console.error("Payment handling error:", error);
-
-    res.setHeader("payment-required", encodePaymentRequired(paymentRequiredPayload));
-
-    return res.status(402).json({
-      error: "Invalid payment signature or settlement error",
-    });
-  }
+app.get("/premium-data", (_req, res) => {
+  res.status(501).json({
+    ok: false,
+    type: "premium",
+    message: "Premium x402 route will be rebuilt cleanly from the official seller flow."
+  });
 });
 
 app.listen(PORT, () => {
   console.log(`NanoGate server running on http://localhost:${PORT}`);
   console.log(`Health route: http://localhost:${PORT}/health`);
   console.log(`Free route: http://localhost:${PORT}/free`);
-  console.log(`Paid route: http://localhost:${PORT}/premium-data`);
-  console.log(`Arc USDC: ${ARC_TESTNET_USDC}`);
-  console.log(`Arc Gateway Wallet: ${ARC_GATEWAY_WALLET}`);
+  console.log(`Premium route: http://localhost:${PORT}/premium-data`);
 });
