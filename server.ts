@@ -15,7 +15,9 @@ const facilitator = new BatchFacilitatorClient();
 
 const ARC_TESTNET_NETWORK = "eip155:5042002";
 const ARC_TESTNET_USDC = "0x3600000000000000000000000000000000000000";
-const ARC_GATEWAY_WALLET = "0x0077777dEBA4688BDeF3E311b846F25870A19B9";
+
+// Lowercase to avoid viem checksum error.
+const ARC_GATEWAY_WALLET = "0x0077777deba4688bdef3e311b846f25870a19b9";
 
 // $0.001 USDC = 1000 base units because USDC has 6 decimals.
 const PREMIUM_AMOUNT = "1000";
@@ -80,9 +82,7 @@ app.get("/free", (_req, res) => {
 });
 
 app.get("/premium-data", async (req, res) => {
-  const signature =
-    req.headers["payment-signature"] ||
-    req.headers["PAYMENT-SIGNATURE".toLowerCase()];
+  const signature = req.headers["payment-signature"];
 
   const paymentRequiredPayload = {
     x402Version: 2,
@@ -91,7 +91,6 @@ app.get("/premium-data", async (req, res) => {
 
   if (!signature || typeof signature !== "string") {
     res.setHeader("payment-required", encodePaymentRequired(paymentRequiredPayload));
-
     return res.status(402).json(paymentRequiredPayload);
   }
 
