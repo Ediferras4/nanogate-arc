@@ -1,6 +1,7 @@
 import "dotenv/config";
 import express from "express";
 import { BatchFacilitatorClient } from "@circle-fin/x402-batching/server";
+import { CHAIN_CONFIGS } from "@circle-fin/x402-batching/client";
 
 const app = express();
 
@@ -13,14 +14,18 @@ if (!SELLER_ADDRESS) {
 
 const facilitator = new BatchFacilitatorClient();
 
+const ARC_CONFIG = CHAIN_CONFIGS["arcTestnet"] as any;
+
 const ARC_TESTNET_NETWORK = "eip155:5042002";
-const ARC_TESTNET_USDC = "0x3600000000000000000000000000000000000000";
+const ARC_TESTNET_USDC = String(
+  ARC_CONFIG.usdcAddress || ARC_CONFIG.usdc
+).toLowerCase();
 
-// Lowercase to avoid viem checksum error.
-const ARC_GATEWAY_WALLET = "0x0077777deba4688bdef3e311b846f25870a19b9";
+const ARC_GATEWAY_WALLET = String(
+  ARC_CONFIG.gatewayWalletAddress || ARC_CONFIG.gatewayWallet
+).toLowerCase();
 
-// $0.001 USDC = 1000 base units because USDC has 6 decimals.
-const PREMIUM_AMOUNT = "1000";
+const PREMIUM_AMOUNT = "1000"; // $0.001 USDC, 6 decimals
 
 const premiumPaymentRequirement = {
   scheme: "exact",
@@ -146,4 +151,6 @@ app.listen(PORT, () => {
   console.log(`Health route: http://localhost:${PORT}/health`);
   console.log(`Free route: http://localhost:${PORT}/free`);
   console.log(`Paid route: http://localhost:${PORT}/premium-data`);
+  console.log(`Arc USDC: ${ARC_TESTNET_USDC}`);
+  console.log(`Arc Gateway Wallet: ${ARC_GATEWAY_WALLET}`);
 });
