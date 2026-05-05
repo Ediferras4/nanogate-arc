@@ -13,7 +13,7 @@ const targetUrl = `${API_URL}/premium-data`;
 
 const client = new GatewayClient({
   chain: "arcTestnet",
-  privateKey: PRIVATE_KEY as `0x${string}`
+  privateKey: PRIVATE_KEY as `0x${string}`,
 });
 
 function safeJson(value: unknown) {
@@ -36,4 +36,17 @@ console.log("\nChecking seller support...");
 const support = await client.supports(targetUrl);
 console.log(safeJson(support));
 
-console.log("\nDiagnostic finished.");
+if (!support.supported) {
+  console.log("\nSTOP: seller is not supported by this buyer.");
+  process.exit(0);
+}
+
+console.log("\nTrying to pay protected route...");
+const result = await client.pay(targetUrl);
+
+console.log("\nPayment result:");
+console.log(safeJson(result));
+
+console.log("\nFinal balances:");
+const updatedBalances = await client.getBalances();
+console.log(safeJson(updatedBalances));
