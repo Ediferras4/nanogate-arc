@@ -24,14 +24,18 @@ app.use((req, res, next) => {
 
 const gateway = createGatewayMiddleware({
   sellerAddress: SELLER_ADDRESS,
+  facilitatorUrl: "https://gateway-api-testnet.circle.com",
+  networks: ["eip155:5042002"],
 });
 
 app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
     status: "online",
-    mode: "simple-circle-gateway-middleware-all-networks",
+    mode: "circle-gateway-testnet-facilitator",
     sellerConfigured: true,
+    network: "eip155:5042002",
+    facilitatorUrl: "https://gateway-api-testnet.circle.com",
     routes: {
       health: "/health",
       free: "/free",
@@ -59,10 +63,17 @@ app.get("/free", (_req, res) => {
 app.get("/premium-data", gateway.require("$0.001"), (req, res) => {
   const payment = (req as any).payment;
 
+  if (payment) {
+    console.log(
+      `Payment accepted: ${payment.amount} USDC from ${payment.payer} on ${payment.network}`
+    );
+  }
+
   res.json({
     ok: true,
     type: "paid",
     product: "NanoGate Premium Data",
+    network: "eip155:5042002",
     price: "$0.001 USDC",
     paid: true,
     payment: payment || null,
@@ -70,6 +81,7 @@ app.get("/premium-data", gateway.require("$0.001"), (req, res) => {
       signal: "Arc Testnet x402 payment accepted.",
       useCase: "paid API access",
       model: "pay-per-request",
+      proof: "NanoGate unlocked this response through Circle Gateway Nanopayments.",
     },
   });
 });
