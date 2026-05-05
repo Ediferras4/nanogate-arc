@@ -35,7 +35,7 @@ app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
     status: "online",
-    mode: "manual-verify-settle-debug",
+    mode: "middleware-protected-route",
     sellerConfigured: true,
     sellerAddress: SELLER_ADDRESS,
     network: "eip155:5042002",
@@ -64,92 +64,28 @@ app.get("/free", (_req, res) => {
   });
 });
 
-app.get("/premium-data", async (req, res, next) => {
-  const paymentHeader = req.headers["payment-signature"];
-
-  console.log("----- /premium-data request -----");
-  console.log("sellerAddress:", SELLER_ADDRESS);
-  console.log("has payment-signature:", Boolean(paymentHeader));
-
-  if (!paymentHeader) {
-    console.log("No payment yet. Returning normal 402 challenge.");
-
-    return gatewayAny.require(PRICE)(req, res, next);
-  }
-
-  try {
-    const paymentRaw = Array.isArray(paymentHeader)
-      ? paymentHeader[0]
-      : paymentHeader;
-
-    const decoded = JSON.parse(
-      Buffer.from(String(paymentRaw), "base64").toString("utf8")
-    );
-
-    console.log("decoded payment payload:");
-    console.log(JSON.stringify(decoded, null, 2));
-
-    console.log("Running gateway.verify...");
-    const verifyResult = await gatewayAny.verify(decoded);
-
-    console.log("verifyResult:");
-    console.log(JSON.stringify(verifyResult, null, 2));
-
-    if (!verifyResult.valid) {
-      console.log("Verification failed. Returning 402 with verifyResult.");
-
-      return res.status(402).json({
-        ok: false,
-        stage: "verify",
-        verifyResult,
-      });
-    }
-
-    console.log("Verification passed. Running gateway.settle...");
-    const settleResult = await gatewayAny.settle(decoded);
-
-    console.log("settleResult:");
-    console.log(JSON.stringify(settleResult, null, 2));
-
-    if (!settleResult.success) {
-      console.log("Settlement failed. Returning 402 with settleResult.");
-
-      return res.status(402).json({
-        ok: false,
-        stage: "settle",
-        settleResult,
-      });
-    }
-
-    return res.json({
+app.get(
+  "/premium-data",
+  gatewayAny.require(PRICE),
+  (_req, res) => {
+    res.json({
       ok: true,
       type: "paid",
       product: "NanoGate Premium Data",
       price: PRICE,
       paid: true,
-      verifyResult,
-      settleResult,
       data: {
         signal: "Arc Testnet x402 payment accepted.",
         useCase: "paid API access",
         model: "pay-per-request",
       },
     });
-  } catch (error) {
-    console.error("Payment handling error:");
-    console.error(error);
-
-    return res.status(402).json({
-      ok: false,
-      stage: "exception",
-      error: error instanceof Error ? error.message : String(error),
-    });
   }
-});
+);
 
 app.listen(PORT, () => {
-  console.log(`NanoGate server running on http://localhost:${PORT}`);
-  console.log(`Health route: http://localhost:${PORT}/health`);
-  console.log(`Free route: http://localhost:${PORT}/free`);
-  console.log(`Paid route: http://localhost:${PORT}/premium-data`);
+  console.log(`NanoGate server running on port ${PORT}`);
+  console.log(`Health route: /health`);
+  console.log(`Free route: /free`);
+  console.log(`Paid route: /premium-data`);
 });
