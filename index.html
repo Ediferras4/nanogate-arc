@@ -1,1 +1,1989 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>NanoGate Premium Request</title>
 
+  <style>
+    *{
+      box-sizing:border-box;
+      margin:0;
+      padding:0;
+      -webkit-tap-highlight-color:transparent;
+    }
+
+    :root{
+      --bg:#000304;
+      --bg2:#02070d;
+      --text:#f3f8ff;
+      --soft:#8fa4bd;
+      --muted:#53677e;
+      --blue:#58d6ff;
+      --cyan:#a9efff;
+      --gold:#c9a85b;
+      --gold2:#edd18a;
+      --green:#48e89a;
+      --red:#ff7676;
+      --headerH:84px;
+    }
+
+    html,
+    body{
+      width:100%;
+      height:100%;
+      overflow:hidden;
+      background:#000304;
+      color:var(--text);
+      font-family:Inter, Arial, Helvetica, sans-serif;
+    }
+
+    body{
+      position:fixed;
+      inset:0;
+    }
+
+    button{
+      border:none;
+      outline:none;
+      font-family:inherit;
+      cursor:pointer;
+    }
+
+    .app{
+      position:fixed;
+      inset:0;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 14% -10%, rgba(88,214,255,.105), transparent 34%),
+        radial-gradient(circle at 92% 4%, rgba(201,168,91,.075), transparent 32%),
+        radial-gradient(circle at 48% 108%, rgba(38,105,160,.075), transparent 44%),
+        linear-gradient(180deg, #000304 0%, #02070d 54%, #000203 100%);
+    }
+
+    .app::before{
+      content:"";
+      position:absolute;
+      inset:0;
+      pointer-events:none;
+      background:
+        linear-gradient(90deg, rgba(255,255,255,.013) 1px, transparent 1px),
+        linear-gradient(180deg, rgba(255,255,255,.010) 1px, transparent 1px);
+      background-size:46px 46px;
+      mask-image:linear-gradient(180deg, rgba(0,0,0,.32), transparent 80%);
+      opacity:.16;
+    }
+
+    .app::after{
+      content:"";
+      position:absolute;
+      left:0;
+      right:0;
+      top:calc(var(--headerH) + env(safe-area-inset-top));
+      height:1px;
+      pointer-events:none;
+      background:linear-gradient(90deg, transparent, rgba(237,209,138,.42), rgba(88,214,255,.16), transparent);
+      z-index:22;
+      opacity:.72;
+    }
+
+    .fixed-head{
+      position:fixed;
+      z-index:20;
+      left:0;
+      right:0;
+      top:0;
+      height:calc(var(--headerH) + env(safe-area-inset-top));
+      padding:calc(9px + env(safe-area-inset-top)) 14px 8px;
+      background:
+        radial-gradient(circle at 18% 0%, rgba(88,214,255,.048), transparent 38%),
+        linear-gradient(180deg, #050f18 0%, #030a12 75%, #010509 100%);
+      border-bottom:1px solid rgba(255,255,255,.036);
+      box-shadow:
+        0 14px 28px rgba(0,0,0,.56),
+        inset 0 -1px 0 rgba(201,168,91,.050);
+    }
+
+    .head-row{
+      height:41px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+    }
+
+    .brand{
+      min-width:0;
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+
+    .logo{
+      width:40px;
+      height:40px;
+      flex:0 0 auto;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      position:relative;
+      overflow:hidden;
+      background:
+        radial-gradient(circle at 32% 24%, #fff3c4 0%, #d3b260 37%, #856323 72%, #120d06 100%);
+      box-shadow:
+        0 0 0 1px rgba(201,168,91,.34),
+        0 0 16px rgba(88,214,255,.10),
+        inset 0 1px 0 rgba(255,255,255,.42);
+    }
+
+    .logo img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    .logo-fallback{
+      position:absolute;
+      inset:0;
+      display:grid;
+      place-items:center;
+      color:#050b10;
+      font-size:15px;
+      font-weight:950;
+      letter-spacing:-.06em;
+    }
+
+    .brand-title{
+      font-size:19px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:-.065em;
+      color:#f8fbff;
+      white-space:nowrap;
+    }
+
+    .brand-title span{
+      color:var(--blue);
+      text-shadow:0 0 14px rgba(88,214,255,.20);
+    }
+
+    .brand-sub{
+      margin-top:5px;
+      font-size:8px;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:rgba(237,209,138,.72);
+      white-space:nowrap;
+    }
+
+    .head-chip{
+      flex:0 0 auto;
+      height:31px;
+      min-width:82px;
+      padding:0 12px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      border:1px solid rgba(88,214,255,.12);
+      background:
+        linear-gradient(180deg, rgba(9,29,43,.72), rgba(3,10,17,.94));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.040),
+        0 8px 18px rgba(0,0,0,.26);
+      color:#dbeaff;
+      font-size:8.5px;
+      font-weight:950;
+      letter-spacing:.13em;
+      text-transform:uppercase;
+    }
+
+    .head-dot{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--blue);
+      box-shadow:0 0 11px rgba(88,214,255,.72);
+    }
+
+    .app.paid .head-chip{
+      color:#eafff0;
+      border-color:rgba(72,232,154,.18);
+      background:rgba(72,232,154,.065);
+    }
+
+    .app.paid .head-dot{
+      background:var(--green);
+      box-shadow:0 0 13px rgba(72,232,154,.82);
+    }
+
+    .head-strip{
+      margin-top:7px;
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:7px;
+    }
+
+    .mini-stat{
+      height:24px;
+      padding:0 8px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:5px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.042);
+      color:rgba(143,164,189,.78);
+      font-size:7.8px;
+      font-weight:950;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      white-space:nowrap;
+      overflow:hidden;
+    }
+
+    .mini-stat strong{
+      color:#eef6ff;
+      font-weight:950;
+      letter-spacing:.06em;
+    }
+
+    .mini-stat.gold strong{
+      color:var(--gold2);
+    }
+
+    .scroll{
+      position:absolute;
+      left:0;
+      right:0;
+      top:calc(var(--headerH) + env(safe-area-inset-top));
+      bottom:0;
+      overflow-y:auto;
+      overflow-x:hidden;
+      -webkit-overflow-scrolling:touch;
+      padding:12px 12px calc(22px + env(safe-area-inset-bottom));
+    }
+
+    .scroll::-webkit-scrollbar{
+      width:0;
+      height:0;
+    }
+
+    .section{
+      width:100%;
+      max-width:760px;
+      margin:0 auto;
+    }
+
+    .hero{
+      padding:11px 3px 11px;
+    }
+
+    .kicker{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      height:26px;
+      padding:0 11px;
+      border-radius:999px;
+      border:1px solid rgba(88,214,255,.12);
+      background:rgba(88,214,255,.044);
+      color:var(--cyan);
+      font-size:8.8px;
+      font-weight:950;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.035);
+    }
+
+    .kicker::before{
+      content:"";
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:var(--blue);
+      box-shadow:0 0 11px rgba(88,214,255,.70);
+    }
+
+    h1{
+      margin-top:11px;
+      font-size:32px;
+      line-height:.96;
+      letter-spacing:-.086em;
+      font-weight:950;
+      color:#f8fbff;
+      max-width:610px;
+    }
+
+    h1 span{
+      color:var(--gold2);
+      text-shadow:0 0 15px rgba(201,168,91,.12);
+    }
+
+    .lead{
+      margin-top:10px;
+      font-size:12.5px;
+      line-height:1.48;
+      color:rgba(218,232,248,.68);
+      max-width:610px;
+    }
+
+    .route-line{
+      margin-top:13px;
+      display:grid;
+      grid-template-columns:1fr auto;
+      align-items:center;
+      gap:10px;
+      padding:10px 12px;
+      border-radius:19px;
+      background:rgba(0,0,0,.24);
+      border:1px solid rgba(201,168,91,.10);
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.026);
+    }
+
+    .label{
+      font-size:8.3px;
+      letter-spacing:.16em;
+      text-transform:uppercase;
+      color:rgba(143,164,189,.64);
+      margin-bottom:4px;
+      font-weight:900;
+    }
+
+    .value{
+      font-size:12.5px;
+      font-weight:900;
+      color:#eff7ff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .value.gold{
+      color:var(--gold2);
+    }
+
+    .rail{
+      margin-top:8px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:10px;
+    }
+
+    .panel{
+      border:1px solid rgba(255,255,255,.052);
+      background:
+        radial-gradient(circle at 12% 0%, rgba(88,214,255,.044), transparent 34%),
+        linear-gradient(180deg, rgba(7,19,31,.90), rgba(2,8,13,.985));
+      border-radius:23px;
+      box-shadow:
+        0 14px 30px rgba(0,0,0,.32),
+        inset 0 1px 0 rgba(255,255,255,.030);
+      overflow:hidden;
+    }
+
+    .panel.thin{
+      border-color:rgba(201,168,91,.12);
+    }
+
+    .panel-head{
+      padding:12px 13px 10px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      border-bottom:1px solid rgba(255,255,255,.036);
+    }
+
+    .panel-title{
+      font-size:14.5px;
+      font-weight:950;
+      letter-spacing:-.04em;
+      color:#f5f9ff;
+    }
+
+    .panel-sub{
+      margin-top:4px;
+      font-size:10.8px;
+      line-height:1.35;
+      color:var(--soft);
+    }
+
+    .pill{
+      flex:0 0 auto;
+      height:26px;
+      padding:0 10px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:7px;
+      font-size:8.2px;
+      font-weight:950;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--soft);
+      background:rgba(0,0,0,.26);
+      border:1px solid rgba(255,255,255,.052);
+    }
+
+    .pill .led{
+      width:7px;
+      height:7px;
+      border-radius:50%;
+      background:var(--muted);
+    }
+
+    .pill.online{
+      color:#dfffea;
+      border-color:rgba(72,232,154,.16);
+      background:rgba(72,232,154,.056);
+    }
+
+    .pill.online .led{
+      background:var(--green);
+      box-shadow:0 0 11px rgba(72,232,154,.76);
+    }
+
+    .pill.locked{
+      color:#d7ecff;
+      border-color:rgba(88,214,255,.12);
+      background:rgba(88,214,255,.040);
+    }
+
+    .pill.locked .led{
+      background:var(--blue);
+      box-shadow:0 0 10px rgba(88,214,255,.60);
+    }
+
+    .wallet-body{
+      padding:11px 13px 13px;
+    }
+
+    .wallet-strip{
+      min-height:51px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 11px;
+      border-radius:17px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.044);
+    }
+
+    .wallet-main{
+      min-width:0;
+    }
+
+    .wallet-value{
+      font-size:13.5px;
+      font-weight:950;
+      color:#f1f8ff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .copy{
+      flex:0 0 auto;
+      height:30px;
+      padding:0 12px;
+      border-radius:999px;
+      border:1px solid rgba(201,168,91,.14);
+      color:var(--gold2);
+      background:rgba(201,168,91,.048);
+      font-size:8.8px;
+      font-weight:950;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+    }
+
+    .connect-row{
+      margin-top:9px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:9px;
+    }
+
+    .btn{
+      height:44px;
+      border-radius:17px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
+      font-size:10.5px;
+      font-weight:950;
+      letter-spacing:.14em;
+      text-transform:uppercase;
+      transition:transform .16s ease, opacity .16s ease, filter .16s ease;
+    }
+
+    .btn:active{
+      transform:scale(.985);
+    }
+
+    .btn:disabled{
+      opacity:.48;
+      filter:saturate(.65);
+      cursor:not-allowed;
+    }
+
+    .btn-blue{
+      color:#eefdff;
+      border:1px solid rgba(88,214,255,.13);
+      background:
+        linear-gradient(180deg, rgba(88,214,255,.125), rgba(19,76,111,.10));
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.048),
+        0 9px 18px rgba(0,0,0,.22);
+    }
+
+    .btn-gold{
+      color:#060b11;
+      background:
+        linear-gradient(180deg, #efd993 0%, #c9a85b 50%, #8f6b2b 100%);
+      box-shadow:
+        0 10px 24px rgba(201,168,91,.14),
+        inset 0 1px 0 rgba(255,255,255,.44);
+      position:relative;
+      overflow:hidden;
+    }
+
+    .btn-gold::before{
+      content:"";
+      position:absolute;
+      inset:1px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.14);
+      pointer-events:none;
+      opacity:.50;
+    }
+
+    .btn-gold::after{
+      content:"";
+      position:absolute;
+      top:0;
+      bottom:0;
+      width:80px;
+      left:-100px;
+      transform:skewX(-18deg);
+      background:linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent);
+      opacity:.0;
+    }
+
+    .app.connected .btn-gold::after{
+      animation:goldSweep 3.8s ease-in-out infinite;
+      opacity:.72;
+    }
+
+    .app.paid .btn-gold::after{
+      animation:none;
+      opacity:0;
+    }
+
+    @keyframes goldSweep{
+      0%, 56%{ left:-100px; }
+      78%{ left:120%; }
+      100%{ left:120%; }
+    }
+
+    .btn-ghost{
+      color:var(--soft);
+      border:1px solid rgba(255,255,255,.050);
+      background:rgba(255,255,255,.024);
+    }
+
+    .pass{
+      padding:13px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .pass::before{
+      content:"";
+      position:absolute;
+      width:190px;
+      height:190px;
+      border-radius:50%;
+      right:-108px;
+      top:-90px;
+      border:1px solid rgba(201,168,91,.10);
+      box-shadow:inset 0 0 50px rgba(88,214,255,.030);
+      pointer-events:none;
+    }
+
+    .pass-main{
+      position:relative;
+      z-index:2;
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:14px;
+      padding-bottom:11px;
+      border-bottom:1px solid rgba(255,255,255,.044);
+    }
+
+    .pass-name{
+      font-size:20px;
+      line-height:1.05;
+      font-weight:950;
+      letter-spacing:-.065em;
+      color:#f8fbff;
+      max-width:250px;
+    }
+
+    .price{
+      flex:0 0 auto;
+      font-size:27px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:-.07em;
+      color:var(--gold2);
+      text-shadow:0 0 15px rgba(201,168,91,.12);
+    }
+
+    .pass-desc{
+      position:relative;
+      z-index:2;
+      margin-top:10px;
+      font-size:12px;
+      line-height:1.45;
+      color:rgba(218,232,248,.66);
+      max-width:560px;
+    }
+
+    .slots{
+      position:relative;
+      z-index:2;
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:repeat(3, 1fr);
+      gap:7px;
+    }
+
+    .slot{
+      min-height:54px;
+      padding:9px 10px;
+      border-radius:15px;
+      border:1px solid rgba(255,255,255,.044);
+      background:rgba(0,0,0,.25);
+    }
+
+    .slot strong{
+      display:block;
+      font-size:11.8px;
+      color:#f2f8ff;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .state-line{
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:11px 12px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.046);
+      background:rgba(0,0,0,.255);
+    }
+
+    .state-copy{
+      min-width:0;
+    }
+
+    .state-copy strong{
+      display:block;
+      font-size:12.8px;
+      margin-bottom:4px;
+      color:#f4f9ff;
+    }
+
+    .state-copy span{
+      display:block;
+      font-size:11.3px;
+      color:var(--soft);
+      line-height:1.35;
+    }
+
+    .gateway-core{
+      flex:0 0 auto;
+      width:44px;
+      height:44px;
+      position:relative;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      isolation:isolate;
+    }
+
+    .core-halo{
+      position:absolute;
+      inset:0;
+      border-radius:50%;
+      background:
+        radial-gradient(circle, rgba(88,214,255,.16), transparent 68%);
+      filter:blur(1px);
+      opacity:.48;
+      transform:scale(.98);
+    }
+
+    .core-ring{
+      position:absolute;
+      inset:3px;
+      border-radius:50%;
+      border:1px solid rgba(88,214,255,.16);
+      opacity:.66;
+    }
+
+    .core-ring::before{
+      content:"";
+      position:absolute;
+      width:5px;
+      height:5px;
+      border-radius:50%;
+      top:-3px;
+      left:50%;
+      transform:translateX(-50%);
+      background:var(--blue);
+      box-shadow:0 0 9px rgba(88,214,255,.70);
+    }
+
+    .core-ring.two{
+      inset:7px;
+      border-color:rgba(201,168,91,.075);
+      transform:rotate(40deg);
+      opacity:.48;
+    }
+
+    .core-orb{
+      width:30px;
+      height:30px;
+      border-radius:50%;
+      position:relative;
+      z-index:2;
+      border:1px solid rgba(255,255,255,.07);
+      background:
+        radial-gradient(circle at 35% 24%, rgba(210,250,255,.70) 0%, rgba(88,214,255,.26) 28%, rgba(6,27,41,.82) 62%, rgba(0,0,0,.90) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        inset -8px -10px 16px rgba(0,0,0,.42),
+        0 0 16px rgba(88,214,255,.15);
+      opacity:.68;
+    }
+
+    .core-orb::after{
+      content:"";
+      position:absolute;
+      width:8px;
+      height:8px;
+      border-radius:50%;
+      top:6px;
+      left:7px;
+      background:rgba(255,255,255,.30);
+      filter:blur(.2px);
+    }
+
+    .app.connected .core-halo{
+      opacity:.74;
+      animation:softBreathe 2.6s ease-in-out infinite;
+    }
+
+    .app.connected .core-orb{
+      opacity:.88;
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.16),
+        inset -8px -10px 16px rgba(0,0,0,.38),
+        0 0 22px rgba(88,214,255,.18);
+    }
+
+    .app.paying .core-ring{
+      border-color:rgba(237,209,138,.28);
+      animation:coreSpin 1s linear infinite;
+      opacity:1;
+    }
+
+    .app.paying .core-ring.two{
+      animation:coreSpinReverse 1.35s linear infinite;
+      border-color:rgba(88,214,255,.20);
+      opacity:.84;
+    }
+
+    .app.paying .core-orb{
+      background:
+        radial-gradient(circle at 35% 24%, #fff4c8 0%, #edd18a 29%, #7e6228 62%, rgba(0,0,0,.90) 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.30),
+        inset -8px -10px 16px rgba(0,0,0,.38),
+        0 0 24px rgba(201,168,91,.25);
+      animation:corePulse .8s ease-in-out infinite;
+      opacity:1;
+    }
+
+    .app.paid .core-halo{
+      background:radial-gradient(circle, rgba(201,168,91,.25), transparent 70%);
+      opacity:.94;
+      filter:blur(1.5px);
+    }
+
+    .app.paid .core-ring{
+      border-color:rgba(201,168,91,.30);
+      opacity:.92;
+      animation:none;
+    }
+
+    .app.paid .core-ring::before{
+      background:var(--green);
+      box-shadow:0 0 10px rgba(72,232,154,.88);
+    }
+
+    .app.paid .core-ring.two{
+      border-color:rgba(237,209,138,.16);
+      opacity:.70;
+      animation:none;
+    }
+
+    .app.paid .core-orb{
+      opacity:1;
+      background:
+        radial-gradient(circle at 34% 24%, #fff4c8 0%, #edd18a 28%, #bd9546 52%, #47300f 82%, #080604 100%);
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.38),
+        inset -9px -11px 18px rgba(0,0,0,.36),
+        0 0 22px rgba(201,168,91,.27);
+    }
+
+    @keyframes softBreathe{
+      0%,100%{ transform:scale(.94); opacity:.52; }
+      50%{ transform:scale(1.08); opacity:.82; }
+    }
+
+    @keyframes coreSpin{
+      to{ transform:rotate(360deg); }
+    }
+
+    @keyframes coreSpinReverse{
+      to{ transform:rotate(-320deg); }
+    }
+
+    @keyframes corePulse{
+      0%,100%{ transform:scale(.96); }
+      50%{ transform:scale(1.06); }
+    }
+
+    .action-row{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:1fr;
+      gap:8px;
+    }
+
+    .receipt{
+      display:none;
+      margin-top:10px;
+      border-top:1px solid rgba(201,168,91,.11);
+      padding:13px;
+      background:
+        linear-gradient(180deg, rgba(201,168,91,.024), rgba(0,0,0,0));
+    }
+
+    .app.paid .receipt{
+      display:block;
+      animation:rise .28s ease both;
+    }
+
+    @keyframes rise{
+      from{ opacity:0; transform:translateY(8px); }
+      to{ opacity:1; transform:translateY(0); }
+    }
+
+    .receipt-card{
+      border-radius:21px;
+      border:1px solid rgba(201,168,91,.115);
+      background:
+        radial-gradient(circle at 100% 0%, rgba(201,168,91,.065), transparent 34%),
+        radial-gradient(circle at 0% 100%, rgba(88,214,255,.032), transparent 35%),
+        rgba(0,0,0,.20);
+      padding:13px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .receipt-card::before{
+      content:"";
+      position:absolute;
+      left:14px;
+      right:14px;
+      top:0;
+      height:1px;
+      background:linear-gradient(90deg, transparent, rgba(237,209,138,.58), transparent);
+      opacity:.80;
+    }
+
+    .receipt-top{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:12px;
+    }
+
+    .receipt-title{
+      font-size:15px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:-.04em;
+      color:#f5f9ff;
+    }
+
+    .receipt-id{
+      margin-top:4px;
+      font-size:9px;
+      color:var(--gold2);
+      font-weight:950;
+      letter-spacing:.13em;
+      text-transform:uppercase;
+    }
+
+    .proof-mark{
+      margin-top:8px;
+      height:24px;
+      width:max-content;
+      padding:0 9px;
+      border-radius:999px;
+      display:flex;
+      align-items:center;
+      gap:6px;
+      border:1px solid rgba(88,214,255,.11);
+      background:rgba(88,214,255,.035);
+      color:rgba(220,240,255,.82);
+      font-size:8px;
+      font-weight:950;
+      letter-spacing:.13em;
+      text-transform:uppercase;
+    }
+
+    .proof-mark span{
+      width:6px;
+      height:6px;
+      border-radius:50%;
+      background:var(--gold2);
+      box-shadow:0 0 9px rgba(201,168,91,.70);
+    }
+
+    .lines{
+      display:grid;
+      gap:8px;
+    }
+
+    .line{
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      font-size:12px;
+    }
+
+    .line span{
+      color:var(--soft);
+    }
+
+    .line strong{
+      color:#f3f8ff;
+      text-align:right;
+      font-weight:900;
+    }
+
+    .line strong.gold{
+      color:var(--gold2);
+    }
+
+    .api-box{
+      margin-top:12px;
+      padding:12px;
+      border-radius:18px;
+      border:1px solid rgba(88,214,255,.105);
+      background:rgba(88,214,255,.032);
+    }
+
+    .api-box p{
+      margin-top:7px;
+      font-size:12px;
+      line-height:1.45;
+      color:rgba(235,246,255,.78);
+    }
+
+    .history{
+      padding:12px 13px 13px;
+      display:grid;
+      gap:8px;
+    }
+
+    .history-item{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 11px;
+      border-radius:17px;
+      border:1px solid rgba(255,255,255,.044);
+      background:rgba(0,0,0,.24);
+    }
+
+    .history-title{
+      font-size:12px;
+      font-weight:950;
+      color:#f1f7ff;
+    }
+
+    .history-sub{
+      margin-top:3px;
+      font-size:10px;
+      color:var(--soft);
+    }
+
+    .tiny{
+      flex:0 0 auto;
+      padding:6px 8px;
+      border-radius:999px;
+      font-size:8.5px;
+      font-weight:950;
+      letter-spacing:.1em;
+      text-transform:uppercase;
+      color:#dfffea;
+      background:rgba(72,232,154,.070);
+      border:1px solid rgba(72,232,154,.15);
+    }
+
+    .tiny.idle{
+      color:var(--soft);
+      background:rgba(255,255,255,.026);
+      border-color:rgba(255,255,255,.050);
+      opacity:.62;
+    }
+
+    .proof-row{
+      margin-top:10px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:8px;
+    }
+
+    .proof{
+      min-height:56px;
+      padding:10px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.044);
+      background:rgba(0,0,0,.21);
+    }
+
+    .proof strong{
+      display:block;
+      margin-top:5px;
+      font-size:12px;
+      color:#f3f8ff;
+    }
+
+    .foot{
+      padding:14px 8px 3px;
+      text-align:center;
+      font-size:10px;
+      line-height:1.45;
+      color:rgba(143,164,189,.43);
+    }
+
+    .hidden{
+      display:none !important;
+    }
+
+    .wallet-overlay{
+      position:fixed;
+      inset:0;
+      z-index:50;
+      background:rgba(0,0,0,.56);
+      backdrop-filter:blur(10px);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .22s ease;
+    }
+
+    .wallet-overlay.open{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    .wallet-sheet{
+      position:absolute;
+      left:10px;
+      right:10px;
+      bottom:10px;
+      max-width:430px;
+      margin:0 auto;
+      border-radius:28px;
+      border:1px solid rgba(201,168,91,.14);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(88,214,255,.08), transparent 38%),
+        linear-gradient(180deg, rgba(7,19,31,.98), rgba(2,8,13,.99));
+      box-shadow:
+        0 28px 70px rgba(0,0,0,.70),
+        inset 0 1px 0 rgba(255,255,255,.045);
+      transform:translateY(112%);
+      transition:transform .28s cubic-bezier(.2,.8,.2,1);
+      overflow:hidden;
+    }
+
+    .wallet-overlay.open .wallet-sheet{
+      transform:translateY(0);
+    }
+
+    .sheet-handle{
+      width:52px;
+      height:5px;
+      border-radius:999px;
+      margin:12px auto 10px;
+      background:linear-gradient(90deg, rgba(201,168,91,.36), rgba(237,209,138,.88), rgba(201,168,91,.36));
+      box-shadow:0 0 14px rgba(201,168,91,.18);
+    }
+
+    .sheet-body{
+      padding:0 14px 15px;
+    }
+
+    .sheet-kicker{
+      font-size:8.5px;
+      font-weight:950;
+      letter-spacing:.18em;
+      text-transform:uppercase;
+      color:var(--cyan);
+      margin-bottom:7px;
+    }
+
+    .sheet-title{
+      font-size:20px;
+      line-height:1;
+      font-weight:950;
+      letter-spacing:-.055em;
+      color:#f8fbff;
+    }
+
+    .sheet-text{
+      margin-top:8px;
+      font-size:12px;
+      line-height:1.45;
+      color:var(--soft);
+    }
+
+    .wallet-options{
+      display:grid;
+      gap:8px;
+      margin-top:13px;
+    }
+
+    .wallet-option{
+      min-height:58px;
+      border-radius:18px;
+      border:1px solid rgba(255,255,255,.050);
+      background:rgba(0,0,0,.24);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 11px;
+      color:#f3f8ff;
+      text-align:left;
+    }
+
+    .wallet-option-left{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .wallet-icon{
+      width:34px;
+      height:34px;
+      border-radius:50%;
+      display:grid;
+      place-items:center;
+      flex:0 0 auto;
+      font-size:11px;
+      font-weight:950;
+      color:#06111b;
+      background:
+        radial-gradient(circle at 35% 25%, #fff4c8, #c9a85b 45%, #5a421a 100%);
+      box-shadow:0 0 0 1px rgba(201,168,91,.20);
+    }
+
+    .wallet-name{
+      font-size:13px;
+      font-weight:950;
+      color:#f3f8ff;
+    }
+
+    .wallet-note{
+      margin-top:3px;
+      font-size:10px;
+      color:var(--soft);
+    }
+
+    .wallet-arrow{
+      color:var(--gold2);
+      font-size:16px;
+      font-weight:900;
+    }
+
+    .network-box{
+      margin-top:12px;
+      padding:11px;
+      border-radius:18px;
+      border:1px solid rgba(88,214,255,.10);
+      background:rgba(88,214,255,.032);
+    }
+
+    .network-top{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .network-title{
+      font-size:12px;
+      font-weight:950;
+      color:#f3f8ff;
+    }
+
+    .network-state{
+      font-size:9px;
+      font-weight:950;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      color:var(--soft);
+    }
+
+    .network-state.ok{
+      color:var(--green);
+    }
+
+    .network-state.bad{
+      color:var(--red);
+    }
+
+    .switch-btn{
+      margin-top:9px;
+      width:100%;
+      height:38px;
+      border-radius:14px;
+      color:#07101a;
+      background:
+        linear-gradient(180deg, #efd993 0%, #c9a85b 50%, #8f6b2b 100%);
+      font-size:10px;
+      font-weight:950;
+      letter-spacing:.12em;
+      text-transform:uppercase;
+      display:none;
+    }
+
+    .switch-btn.show{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    @media (min-width:760px){
+      :root{
+        --headerH:90px;
+      }
+
+      .fixed-head{
+        padding-left:26px;
+        padding-right:26px;
+      }
+
+      .scroll{
+        padding-left:26px;
+        padding-right:26px;
+      }
+
+      h1{
+        font-size:50px;
+        max-width:700px;
+      }
+
+      .lead{
+        font-size:14.5px;
+      }
+
+      .rail{
+        grid-template-columns:1fr 1fr;
+        align-items:start;
+      }
+
+      .panel.wide{
+        grid-column:1 / -1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="app" id="app">
+    <header class="fixed-head">
+      <div class="head-row">
+        <div class="brand">
+          <div class="logo">
+            <img src="logo.png" alt="" onerror="this.style.display='none'" />
+            <span class="logo-fallback">N</span>
+          </div>
+
+          <div class="brand-text">
+            <div class="brand-title">Nano<span>Gate</span></div>
+            <div class="brand-sub">Pagamento por requisição</div>
+          </div>
+        </div>
+
+        <div class="head-chip" id="headChip">
+          <span class="head-dot"></span>
+          Testnet
+        </div>
+      </div>
+
+      <div class="head-strip">
+        <div class="mini-stat">Rede <strong id="topNetwork">Arc</strong></div>
+        <div class="mini-stat gold">Preço <strong>$0.001</strong></div>
+        <div class="mini-stat">API <strong>Protegida</strong></div>
+      </div>
+    </header>
+
+    <section class="scroll">
+      <div class="section">
+        <section class="hero">
+          <div class="kicker">Resposta premium por microtaxa</div>
+
+          <h1>Libere <span>1 resposta premium</span>.</h1>
+
+          <p class="lead">
+            Pague uma microtaxa e desbloqueie uma resposta protegida da API NanoGate. A prova técnica aparece no recibo da requisição.
+          </p>
+
+          <div class="route-line">
+            <div>
+              <div class="label">API protegida</div>
+              <div class="value">/premium-data</div>
+            </div>
+
+            <div>
+              <div class="label">Compra</div>
+              <div class="value gold">1 requisição</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="rail">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Sessão da carteira</div>
+                <div class="panel-sub">Conecte uma carteira e prepare a compra da resposta premium.</div>
+              </div>
+
+              <div class="pill locked" id="walletStatus">
+                <span class="led"></span>
+                Offline
+              </div>
+            </div>
+
+            <div class="wallet-body">
+              <div class="wallet-strip">
+                <div class="wallet-main">
+                  <div class="label">Carteira conectada</div>
+                  <div class="wallet-value" id="walletValue">Não conectada</div>
+                </div>
+
+                <button class="copy" id="copyWalletBtn" disabled>Copiar</button>
+              </div>
+
+              <div class="proof-row">
+                <div class="proof">
+                  <div class="label">Rede</div>
+                  <strong id="gatewayStatus">Aguardando</strong>
+                </div>
+
+                <div class="proof">
+                  <div class="label">Resposta</div>
+                  <strong id="accessMini">Bloqueada</strong>
+                </div>
+              </div>
+
+              <div class="connect-row">
+                <button class="btn btn-blue" id="connectBtn">Conectar carteira</button>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel thin">
+            <div class="pass">
+              <div class="pass-main">
+                <div>
+                  <div class="label">Produto</div>
+                  <div class="pass-name">1 Resposta Premium</div>
+                </div>
+
+                <div class="price">$0.001</div>
+              </div>
+
+              <p class="pass-desc">
+                Uma chamada protegida da API. Sem pagamento fica bloqueada; depois retorna 200 OK.
+              </p>
+
+              <div class="slots">
+                <div class="slot">
+                  <div class="label">Status</div>
+                  <strong id="passStatus">Bloqueada</strong>
+                </div>
+
+                <div class="slot">
+                  <div class="label">Antes</div>
+                  <strong>HTTP 402</strong>
+                </div>
+
+                <div class="slot">
+                  <div class="label">Depois</div>
+                  <strong>200 OK</strong>
+                </div>
+              </div>
+
+              <div class="state-line">
+                <div class="state-copy">
+                  <strong id="unlockTitle">Resposta bloqueada</strong>
+                  <span id="unlockText">Conecte sua carteira antes de liberar a resposta premium.</span>
+                </div>
+
+                <div class="gateway-core" aria-hidden="true">
+                  <div class="core-halo"></div>
+                  <div class="core-ring"></div>
+                  <div class="core-ring two"></div>
+                  <div class="core-orb"></div>
+                </div>
+              </div>
+
+              <div class="action-row">
+                <button class="btn btn-gold" id="unlockBtn" disabled>Liberar resposta premium</button>
+                <button class="btn btn-ghost hidden" id="resetBtn">Reiniciar sessão</button>
+              </div>
+            </div>
+
+            <div class="receipt" id="receipt">
+              <div class="receipt-card">
+                <div class="receipt-top">
+                  <div>
+                    <div class="receipt-title">Recibo da requisição</div>
+                    <div class="receipt-id" id="receiptId">NG-0000</div>
+                    <div class="proof-mark"><span></span> Resposta liberada</div>
+                  </div>
+
+                  <div class="pill online">
+                    <span class="led"></span>
+                    Pago
+                  </div>
+                </div>
+
+                <div class="lines">
+                  <div class="line">
+                    <span>Rede</span>
+                    <strong>eip155:5042002</strong>
+                  </div>
+
+                  <div class="line">
+                    <span>Valor</span>
+                    <strong class="gold">$0.001 USDC</strong>
+                  </div>
+
+                  <div class="line">
+                    <span>Recebedor</span>
+                    <strong>0x584b...1d7E</strong>
+                  </div>
+
+                  <div class="line">
+                    <span>Resultado</span>
+                    <strong>200 OK</strong>
+                  </div>
+                </div>
+
+                <div class="api-box">
+                  <div class="label">Resposta premium da API</div>
+                  <p>
+                    Pagamento verificado. A rota /premium-data retornou 200 OK e entregou a resposta premium do NanoGate.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="panel wide">
+            <div class="panel-head">
+              <div>
+                <div class="panel-title">Histórico da sessão</div>
+                <div class="panel-sub">Depois, esta área vai receber as requisições pagas reais do Gateway.</div>
+              </div>
+            </div>
+
+            <div class="history" id="historyList">
+              <div class="history-item">
+                <div>
+                  <div class="history-title">Aguardando primeira compra</div>
+                  <div class="history-sub">Nenhuma resposta premium liberada ainda</div>
+                </div>
+
+                <div class="tiny idle">Parado</div>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <div class="foot">
+          Logo e aba da carteira instalados. Pagamento real entra na próxima fase.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="wallet-overlay" id="walletOverlay">
+    <section class="wallet-sheet" role="dialog" aria-label="Conectar carteira">
+      <button class="sheet-handle" id="closeWalletSheet" aria-label="Fechar"></button>
+
+      <div class="sheet-body">
+        <div class="sheet-kicker">Carteira</div>
+        <div class="sheet-title">Conectar na NanoGate</div>
+        <p class="sheet-text">
+          Escolha a carteira instalada no navegador. Depois vamos usar essa sessão para validar a rede Arc Testnet.
+        </p>
+
+        <div class="wallet-options">
+          <button class="wallet-option" data-wallet="injected">
+            <div class="wallet-option-left">
+              <div class="wallet-icon">W</div>
+              <div>
+                <div class="wallet-name">Carteira do navegador</div>
+                <div class="wallet-note">MetaMask, Rabby, OKX ou compatível</div>
+              </div>
+            </div>
+            <div class="wallet-arrow">›</div>
+          </button>
+
+          <button class="wallet-option" data-wallet="metamask">
+            <div class="wallet-option-left">
+              <div class="wallet-icon">M</div>
+              <div>
+                <div class="wallet-name">MetaMask</div>
+                <div class="wallet-note">Usar provider injetado</div>
+              </div>
+            </div>
+            <div class="wallet-arrow">›</div>
+          </button>
+
+          <button class="wallet-option" data-wallet="rabby">
+            <div class="wallet-option-left">
+              <div class="wallet-icon">R</div>
+              <div>
+                <div class="wallet-name">Rabby / OKX</div>
+                <div class="wallet-note">Compatível com window.ethereum</div>
+              </div>
+            </div>
+            <div class="wallet-arrow">›</div>
+          </button>
+        </div>
+
+        <div class="network-box">
+          <div class="network-top">
+            <div class="network-title">Arc Testnet</div>
+            <div class="network-state" id="networkState">Aguardando</div>
+          </div>
+
+          <button class="switch-btn" id="switchArcBtn">Trocar para Arc Testnet</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const ARC_CHAIN_ID_DEC = 5042002;
+    const ARC_CHAIN_ID_HEX = "0x4cef52";
+
+    const ARC_PARAMS = {
+      chainId: ARC_CHAIN_ID_HEX,
+      chainName: "Arc Testnet",
+      nativeCurrency: {
+        name: "USDC",
+        symbol: "USDC",
+        decimals: 18
+      },
+      rpcUrls: ["https://rpc.testnet.arc.network"],
+      blockExplorerUrls: ["https://testnet.arcscan.app"]
+    };
+
+    const app = document.getElementById("app");
+
+    const connectBtn = document.getElementById("connectBtn");
+    const unlockBtn = document.getElementById("unlockBtn");
+    const resetBtn = document.getElementById("resetBtn");
+    const copyWalletBtn = document.getElementById("copyWalletBtn");
+
+    const walletStatus = document.getElementById("walletStatus");
+    const walletValue = document.getElementById("walletValue");
+
+    const passStatus = document.getElementById("passStatus");
+    const unlockTitle = document.getElementById("unlockTitle");
+    const unlockText = document.getElementById("unlockText");
+    const receiptId = document.getElementById("receiptId");
+    const historyList = document.getElementById("historyList");
+    const headChip = document.getElementById("headChip");
+
+    const gatewayStatus = document.getElementById("gatewayStatus");
+    const accessMini = document.getElementById("accessMini");
+    const topNetwork = document.getElementById("topNetwork");
+
+    const walletOverlay = document.getElementById("walletOverlay");
+    const closeWalletSheet = document.getElementById("closeWalletSheet");
+    const switchArcBtn = document.getElementById("switchArcBtn");
+    const networkState = document.getElementById("networkState");
+
+    let connected = false;
+    let paid = false;
+    let currentAccount = "";
+    let isArc = false;
+
+    function shortAddress(address){
+      if(!address || address.length < 12) return address;
+      return address.slice(0, 6) + "..." + address.slice(-4);
+    }
+
+    function makeReceiptId(){
+      const n = Math.floor(1000 + Math.random() * 8999);
+      return "NG-" + n;
+    }
+
+    function openWalletSheet(){
+      walletOverlay.classList.add("open");
+      updateNetworkState();
+    }
+
+    function closeWallet(){
+      walletOverlay.classList.remove("open");
+    }
+
+    function setHead(label){
+      headChip.innerHTML = '<span class="head-dot"></span>' + label;
+    }
+
+    function hasEthereum(){
+      return typeof window !== "undefined" && Boolean(window.ethereum);
+    }
+
+    async function getChainId(){
+      if(!hasEthereum()) return null;
+      return await window.ethereum.request({ method:"eth_chainId" });
+    }
+
+    async function updateNetworkState(){
+      if(!hasEthereum()){
+        networkState.textContent = "Sem wallet";
+        networkState.className = "network-state bad";
+        switchArcBtn.classList.remove("show");
+        return;
+      }
+
+      try{
+        const chainId = await getChainId();
+        isArc = String(chainId).toLowerCase() === ARC_CHAIN_ID_HEX;
+
+        if(isArc){
+          networkState.textContent = "Arc OK";
+          networkState.className = "network-state ok";
+          switchArcBtn.classList.remove("show");
+          gatewayStatus.textContent = connected ? "Arc OK" : "Aguardando";
+          topNetwork.textContent = "Arc";
+        }else{
+          networkState.textContent = "Rede errada";
+          networkState.className = "network-state bad";
+          switchArcBtn.classList.add("show");
+          gatewayStatus.textContent = connected ? "Rede errada" : "Aguardando";
+          topNetwork.textContent = "Wrong";
+        }
+      }catch(error){
+        networkState.textContent = "Erro";
+        networkState.className = "network-state bad";
+        switchArcBtn.classList.add("show");
+      }
+    }
+
+    async function switchToArc(){
+      if(!hasEthereum()){
+        openWalletSheet();
+        return;
+      }
+
+      try{
+        await window.ethereum.request({
+          method:"wallet_switchEthereumChain",
+          params:[{ chainId: ARC_CHAIN_ID_HEX }]
+        });
+      }catch(error){
+        if(error && error.code === 4902){
+          await window.ethereum.request({
+            method:"wallet_addEthereumChain",
+            params:[ARC_PARAMS]
+          });
+        }else{
+          throw error;
+        }
+      }
+
+      await updateNetworkState();
+
+      if(connected && isArc){
+        setReadyState();
+      }
+    }
+
+    async function connectWallet(){
+      if(!hasEthereum()){
+        networkState.textContent = "Wallet não encontrada";
+        networkState.className = "network-state bad";
+        return;
+      }
+
+      try{
+        const accounts = await window.ethereum.request({
+          method:"eth_requestAccounts"
+        });
+
+        currentAccount = accounts && accounts[0] ? accounts[0] : "";
+
+        if(!currentAccount) return;
+
+        connected = true;
+        app.classList.add("connected");
+
+        walletStatus.className = "pill online";
+        walletStatus.innerHTML = '<span class="led"></span>Online';
+
+        walletValue.textContent = shortAddress(currentAccount);
+        copyWalletBtn.disabled = false;
+
+        connectBtn.textContent = "Carteira conectada";
+        connectBtn.disabled = true;
+
+        await updateNetworkState();
+
+        if(isArc){
+          setReadyState();
+          closeWallet();
+        }else{
+          unlockBtn.disabled = true;
+          accessMini.textContent = "Rede errada";
+          passStatus.textContent = "Bloqueada";
+          unlockTitle.textContent = "Troque para Arc Testnet";
+          unlockText.textContent = "A carteira conectou, mas a rede ainda não é a Arc Testnet.";
+          setHead("Rede");
+        }
+      }catch(error){
+        networkState.textContent = "Recusado";
+        networkState.className = "network-state bad";
+      }
+    }
+
+    function setReadyState(){
+      gatewayStatus.textContent = "Arc OK";
+      accessMini.textContent = "Pronta";
+
+      unlockBtn.disabled = false;
+
+      unlockTitle.textContent = "Pronta para liberar";
+      unlockText.textContent = "A resposta premium já pode ser comprada.";
+
+      setHead("Pronto");
+    }
+
+    function setPaying(){
+      app.classList.add("paying");
+
+      unlockBtn.disabled = true;
+      unlockBtn.textContent = "Processando pagamento";
+
+      gatewayStatus.textContent = "Verificando";
+      accessMini.textContent = "Pendente";
+
+      unlockTitle.textContent = "Verificando pagamento";
+      unlockText.textContent = "Simulando a verificação do nanopagamento na Arc Testnet.";
+
+      setHead("Pagando");
+    }
+
+    function setPaid(){
+      paid = true;
+
+      app.classList.remove("paying");
+      app.classList.add("paid");
+
+      const id = makeReceiptId();
+      receiptId.textContent = id;
+
+      passStatus.textContent = "Liberada";
+      gatewayStatus.textContent = "Verificado";
+      accessMini.textContent = "Liberada";
+
+      unlockTitle.textContent = "Resposta liberada";
+      unlockText.textContent = "Pagamento verificado. A API premium retornou 200 OK.";
+
+      unlockBtn.textContent = "Resposta premium liberada";
+      unlockBtn.disabled = true;
+
+      resetBtn.classList.remove("hidden");
+
+      setHead("Pago");
+
+      historyList.innerHTML = `
+        <div class="history-item">
+          <div>
+            <div class="history-title">Resposta premium comprada</div>
+            <div class="history-sub">${id} • $0.001 • Arc Testnet</div>
+          </div>
+          <div class="tiny">Pago</div>
+        </div>
+
+        <div class="history-item">
+          <div>
+            <div class="history-title">API protegida liberada</div>
+            <div class="history-sub">/premium-data retornou 200 OK</div>
+          </div>
+          <div class="tiny">Aberto</div>
+        </div>
+      `;
+    }
+
+    function resetDemo(){
+      paid = false;
+
+      app.classList.remove("paid", "paying");
+
+      passStatus.textContent = "Bloqueada";
+
+      if(connected && isArc){
+        unlockBtn.disabled = false;
+        unlockTitle.textContent = "Pronta para liberar";
+        unlockText.textContent = "A resposta premium já pode ser comprada.";
+        setHead("Pronto");
+        gatewayStatus.textContent = "Arc OK";
+        accessMini.textContent = "Pronta";
+      }else if(connected && !isArc){
+        unlockBtn.disabled = true;
+        unlockTitle.textContent = "Troque para Arc Testnet";
+        unlockText.textContent = "A carteira conectou, mas a rede ainda não é a Arc Testnet.";
+        setHead("Rede");
+        gatewayStatus.textContent = "Rede errada";
+        accessMini.textContent = "Bloqueada";
+      }else{
+        app.classList.remove("connected");
+        unlockBtn.disabled = true;
+        unlockTitle.textContent = "Resposta bloqueada";
+        unlockText.textContent = "Conecte sua carteira antes de liberar a resposta premium.";
+        setHead("Testnet");
+        gatewayStatus.textContent = "Aguardando";
+        accessMini.textContent = "Bloqueada";
+      }
+
+      unlockBtn.textContent = "Liberar resposta premium";
+      resetBtn.classList.add("hidden");
+
+      historyList.innerHTML = `
+        <div class="history-item">
+          <div>
+            <div class="history-title">Aguardando primeira compra</div>
+            <div class="history-sub">Nenhuma resposta premium liberada ainda</div>
+          </div>
+          <div class="tiny idle">Parado</div>
+        </div>
+      `;
+    }
+
+    connectBtn.addEventListener("click", openWalletSheet);
+    closeWalletSheet.addEventListener("click", closeWallet);
+    switchArcBtn.addEventListener("click", switchToArc);
+
+    walletOverlay.addEventListener("click", (event) => {
+      if(event.target === walletOverlay) closeWallet();
+    });
+
+    document.querySelectorAll(".wallet-option").forEach((button) => {
+      button.addEventListener("click", connectWallet);
+    });
+
+    unlockBtn.addEventListener("click", () => {
+      if(!connected || !isArc || paid) return;
+
+      setPaying();
+
+      setTimeout(() => {
+        setPaid();
+      }, 1200);
+    });
+
+    resetBtn.addEventListener("click", resetDemo);
+
+    copyWalletBtn.addEventListener("click", async () => {
+      try{
+        await navigator.clipboard.writeText(currentAccount);
+        copyWalletBtn.textContent = "Copiado";
+        setTimeout(() => {
+          copyWalletBtn.textContent = "Copiar";
+        }, 900);
+      }catch(error){
+        copyWalletBtn.textContent = "Copiar";
+      }
+    });
+
+    if(hasEthereum()){
+      window.ethereum.on?.("accountsChanged", (accounts) => {
+        currentAccount = accounts && accounts[0] ? accounts[0] : "";
+
+        if(!currentAccount){
+          connected = false;
+          currentAccount = "";
+          walletValue.textContent = "Não conectada";
+          copyWalletBtn.disabled = true;
+          connectBtn.disabled = false;
+          connectBtn.textContent = "Conectar carteira";
+          walletStatus.className = "pill locked";
+          walletStatus.innerHTML = '<span class="led"></span>Offline';
+          resetDemo();
+          return;
+        }
+
+        connected = true;
+        walletValue.textContent = shortAddress(currentAccount);
+      });
+
+      window.ethereum.on?.("chainChanged", async () => {
+        await updateNetworkState();
+
+        if(connected && isArc){
+          setReadyState();
+        }else if(connected){
+          unlockBtn.disabled = true;
+          accessMini.textContent = "Rede errada";
+          unlockTitle.textContent = "Troque para Arc Testnet";
+          unlockText.textContent = "A carteira conectou, mas a rede ainda não é a Arc Testnet.";
+          setHead("Rede");
+        }
+      });
+    }
+  </script>
+</body>
+  </html>
