@@ -13,6 +13,21 @@ if (!SELLER_ADDRESS) {
 }
 
 app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, X-PAYMENT, payment-signature"
+  );
+
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(204);
+  }
+
+  next();
+});
+
+app.use((req, res, next) => {
   const startedAt = Date.now();
 
   res.on("finish", () => {
@@ -35,7 +50,7 @@ app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
     status: "online",
-    mode: "middleware-protected-route",
+    mode: "seller-protected-route",
     sellerConfigured: true,
     sellerAddress: SELLER_ADDRESS,
     network: "eip155:5042002",
@@ -53,6 +68,9 @@ app.get("/health", (_req, res) => {
     ok: true,
     service: "nanogate-arc",
     status: "healthy",
+    network: "eip155:5042002",
+    sellerAddress: SELLER_ADDRESS,
+    price: PRICE,
   });
 });
 
@@ -71,7 +89,7 @@ app.get(
     res.json({
       ok: true,
       type: "paid",
-      product: "NanoGate Premium Data",
+      product: "NanoGate Premium Response",
       price: PRICE,
       paid: true,
       data: {
