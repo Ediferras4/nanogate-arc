@@ -13,6 +13,7 @@ const RAW_BUYER_PRIVATE_KEY =
 
 const API_URL = process.env.API_URL || "https://nanogate-arc.onrender.com";
 const PRICE = "$0.001";
+const DEMO_PAYMENT_LIMIT = 30;
 
 if (!SELLER_ADDRESS) {
   throw new Error("Missing SELLER_ADDRESS in environment variables.");
@@ -24,6 +25,54 @@ const BUYER_PRIVATE_KEY =
     : RAW_BUYER_PRIVATE_KEY
       ? `0x${RAW_BUYER_PRIVATE_KEY}`
       : undefined;
+
+type Usage = {
+  count: number;
+  lastPaymentAt: string | null;
+};
+
+const walletUsage = new Map<string, Usage>();
+
+function normalizeWallet(value: unknown) {
+  if (typeof value !== "string") return null;
+
+  const wallet = value.trim();
+
+  if (!/^0x[a-fA-F0-9]{40}$/.test(wallet)) {
+    return null;
+  }
+
+  return wallet.toLowerCase();
+}
+
+function getUsage(wallet: string) {
+  const existing = walletUsage.get(wallet);
+
+  if (existing) {
+    return existing;
+  }
+
+  const fresh: Usage = {
+    count: 0,
+    lastPaymentAt: null,
+  };
+
+  walletUsage.set(wallet, fresh);
+
+  return fresh;
+}
+
+function safeJson(value: unknown) {
+  return JSON.stringify(
+    value,
+    (_key, val) => (typeof val === "bigint" ? val.toString() : val),
+    2
+  );
+}
+
+function cleanForResponse(value: unknown) {
+  return JSON.parse(safeJson(value));
+}
 
 app.use(express.json());
 
@@ -65,18 +114,6 @@ const gateway = createGatewayMiddleware({
 
 const gatewayAny = gateway as any;
 
-function safeJson(value: unknown) {
-  return JSON.stringify(
-    value,
-    (_key, val) => (typeof val === "bigint" ? val.toString() : val),
-    2
-  );
-}
-
-function cleanForResponse(value: unknown) {
-  return JSON.parse(safeJson(value));
-}
-
 app.get("/", (_req, res) => {
   res.json({
     app: "NanoGate Arc",
@@ -88,6 +125,7 @@ app.get("/", (_req, res) => {
     network: "eip155:5042002",
     facilitatorUrl: "https://gateway-api-testnet.circle.com",
     price: PRICE,
+    demoPaymentLimit: DEMO_PAYMENT_LIMIT,
     routes: {
       health: "/health",
       free: "/free",
@@ -106,6 +144,7 @@ app.get("/health", (_req, res) => {
     sellerAddress: SELLER_ADDRESS,
     buyerConfigured: Boolean(BUYER_PRIVATE_KEY),
     price: PRICE,
+    demoPaymentLimit: DEMO_PAYMENT_LIMIT,
   });
 });
 
@@ -136,7 +175,31 @@ app.get(
   }
 );
 
-app.post("/pay-premium-demo", async (_req, res) => {
+app.post("/pay-premium-demo", async (req, res) => {
+  const connectedWallet = normalizeWallet(req.body?.wallet);
+
+  if (!connectedWallet) {
+    return res.status(400).json({
+      ok: false,
+      stage: "wallet",
+      error: "Missing or invalid connected wallet address.",
+    });
+  }
+
+  const usage = getUsage(connectedWallet);
+
+  if (usage.count >= DEMO_PAYMENT_LIMIT) {
+    return res.status(429).json({
+      ok: false,
+      stage: "limit",
+      error: `Demo payment limit reached for this wallet. Limit: ${DEMO_PAYMENT_LIMIT}.`,
+      wallet: connectedWallet,
+      used: usage.count,
+      limit: DEMO_PAYMENT_LIMIT,
+      remaining: 0,
+    });
+  }
+
   if (!BUYER_PRIVATE_KEY) {
     return res.status(500).json({
       ok: false,
@@ -155,6 +218,7 @@ app.post("/pay-premium-demo", async (_req, res) => {
     });
 
     console.log("Running demo buyer payment...");
+    console.log("Connected wallet:", connectedWallet);
     console.log("Target:", targetUrl);
 
     const balancesBefore = await client.getBalances();
@@ -172,6 +236,12 @@ app.post("/pay-premium-demo", async (_req, res) => {
     console.log("Balances after:");
     console.log(safeJson(balancesAfter));
 
+    usage.count += 1;
+    usage.lastPaymentAt = new Date().toISOString();
+    walletUsage.set(connectedWallet, usage);
+
+    const remaining = Math.max(DEMO_PAYMENT_LIMIT - usage.count, 0);
+
     return res.json({
       ok: true,
       stage: "paid",
@@ -179,6 +249,13 @@ app.post("/pay-premium-demo", async (_req, res) => {
       targetUrl,
       price: PRICE,
       paid: true,
+      connectedWallet,
+      walletUsage: {
+        used: usage.count,
+        limit: DEMO_PAYMENT_LIMIT,
+        remaining,
+        lastPaymentAt: usage.lastPaymentAt,
+      },
       result: cleanForResponse(paymentResult),
       balancesBefore: cleanForResponse(balancesBefore),
       balancesAfter: cleanForResponse(balancesAfter),
@@ -191,6 +268,10 @@ app.post("/pay-premium-demo", async (_req, res) => {
       ok: false,
       stage: "payment",
       error: error instanceof Error ? error.message : String(error),
+      wallet: connectedWallet,
+      used: usage.count,
+      limit: DEMO_PAYMENT_LIMIT,
+      remaining: Math.max(DEMO_PAYMENT_LIMIT - usage.count, 0),
     });
   }
 });
